@@ -1,0 +1,43 @@
+
+								p gina: 1 
+
+ Listado Fuente: e5p1.LST
+ Programa Fuente en: e5p1.ASM
+ Fecha: Wed Mar 29 14:45:06 2023
+
+ ÚDir.ÚCodigo maquina	 Linea¿	ÚCodigo en lenguaje ensamble
+
+			      1	ORG 1000H
+			      2	
+ 1000 03		      3	A DB 3
+ 1001 04		      4	B DB 4
+ 1002 04		      5	C DB ?
+			      6	
+			      7	ORG 2000H
+			      8	
+ 2000 8A 06 00 10	      9	MOV AL, A
+ 2004 8A 1E 01 10	     10	MOV BL, B
+ 2008 8A 0E 02 10	     11	MOV CL, C
+			     12	
+ 200C 8A E0		     13	MOV AH, AL
+ 200E 2A E3		     14	SUB AH, BL;A - B
+			     15	
+ 2010 78 07		     16	JS BMAYOR
+ 2012 88 06 02 10	     17	MOV C, AL
+ 2016 E9 1D 20		     18	JMP FIN
+			     19	
+ 2019 88 1E 02 10	     20	BMAYOR: MOV C, BL
+			     21	
+ 201D F4		     22	FIN: HLT 
+			     23	END
+
+
+ S I M B O L O S:
+
+ Nombre:	Tipo:		Valor:
+
+ A       	Byte		1000h
+ B       	Byte		1001h
+ C       	Byte		1002h
+ BMAYOR  	Label		2019h
+ FIN     	Label		201Dh
