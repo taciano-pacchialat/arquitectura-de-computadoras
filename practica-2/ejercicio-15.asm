@@ -1,0 +1,101 @@
+TIMER EQU 10H
+PIC EQU 20H
+EOI EQU 20H
+N_CLK EQU 11
+N_F10 EQU 10
+
+ORG 1000H
+SEGS1 DB 0
+SEGS2 DB 0
+
+ORG 40
+DIRECCION_RUT_F10 DW RUT_F10
+ORG 44
+DIRECCION_RUT_CLK DW RUT_CLK
+
+ORG 3000H
+RUT_F10:
+  PUSH AX
+  PUSH BX
+  PUSH CX
+  PUSH DX
+  MOV AL, 1
+  OUT TIMER + 1, AL
+  MOV AL, 0
+  OUT TIMER, AL
+  MOV AL, 20H
+  OUT EOI, AL
+  POP AX
+  IRET
+
+RUT_CLK:
+  MOV BX, DX; direc de 2ndo digito en BX
+  MOV AL, [BX]; segundo digito en AL
+  CMP AL, 030H
+  JZ SEGUNDO_ES_0
+  ;si el segundo digito no es 0,
+  ;lo decremento
+  DEC AL
+  MOV [BX], AL
+  JMP IMPRIMIR_FIN
+  
+
+SEGUNDO_ES_0: 
+  MOV BX, CX
+  MOV AH, [BX]; primer digito en AH
+  CMP AH, 30H
+  JZ IMPRIMIR_FIN
+
+IMPRIMIR_FIN:
+  MOV AL, 1
+  MOV BX, CX
+  INT 7; imprimo primer digito
+  MOV BX, DX
+  INT 7; imprimo segundo digito
+  MOV AL, 020H
+  OUT EOI, AL
+  POP AX
+  POP BX
+  POP CX
+  POP DX
+  IRET
+
+  
+ORG 2000H
+CLI
+MOV AL, 11111100B
+OUT PIC + 1, AL; al IMR
+MOV AL, 1
+OUT TIMER + 1, AL; al COMP
+MOV AL, N_F10
+OUT PIC + 4, AL; asigno posiciones al INT0
+MOV AL, N_CLK
+OUT PIC + 5, AL; asigno posicion al INT1
+
+
+MOV BX, OFFSET SEGS1
+INT 6
+MOV CX, BX
+MOV BX, OFFSET SEGS2
+INT 6
+MOV DX, BX
+; direc de SEGS1 en CX
+; direc de SEGS2 en DX
+STI
+LAZO: JMP LAZO
+HLT
+END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
