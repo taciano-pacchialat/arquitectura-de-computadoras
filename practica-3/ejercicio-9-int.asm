@@ -1,0 +1,89 @@
+ESTADO EQU 41H
+DATO EQU 40H
+INT2 EQU 26H
+IMR EQU 21H
+EOI EQU 20H
+ID_HND EQU 10
+
+ORG 1000H
+CARACTERES DB ?
+DB ?
+DB ?
+DB ?
+DB ?
+FIN DB ?
+
+ORG 40
+IP_HND DW RUT_HND
+
+ORG 3000H
+RUT_HND: PUSH AX
+PUSH CX
+PUSH DX
+
+CMP BX, CX
+JZ RETORNO1
+MOV AL, [BX]
+OUT DATO, AL
+INC BX
+
+RETORNO1: POP DX
+POP CX
+MOV AL, 20H
+OUT EOI, AL
+INT 0
+POP AX
+  
+IRET
+
+LEER: PUSH AX
+PUSH BX
+PUSH CX
+PUSH DX
+; CX offset fin, BX offset caracteres
+LOOP: CMP BX, CX
+JZ RETORNO
+INT 6
+INC BX
+JMP LOOP
+
+RETORNO: POP DX
+POP CX
+POP BX
+POP AX
+RET
+  
+ORG 2000H
+CLI
+MOV AL, 11111011B
+OUT IMR, AL; desenmascaro la int del handshake
+IN AL, ESTADO
+OR AL, 080H
+OUT ESTADO, AL; modifico el estado para hacerlo por interrupciones
+MOV AL, ID_HND
+OUT INT2, AL; asigno al PIC el ID del gestor
+MOV BX, OFFSET CARACTERES
+MOV CX, OFFSET FIN
+CALL LEER; leo los 5 chars
+STI
+LAZO: CMP BX, CX
+JNZ LAZO
+IN AL, ESTADO; desactivo el hand por interrupcion
+AND AL, 07FH
+OUT ESTADO, AL
+HLT
+END
+
+
+
+
+
+
+
+
+
+
+
+
+
+

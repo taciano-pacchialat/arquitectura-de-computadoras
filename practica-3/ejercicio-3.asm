@@ -1,0 +1,109 @@
+TIMER EQU 10H
+PIC EQU 20H
+EOI EQU 20H
+N_CLK EQU 11
+PA EQU 30H; switches
+PB EQU 31H; leds
+CA EQU 32H
+CB EQU 33H
+
+ORG 1000H
+NUMERO DB 0
+UNO DB 1
+DOS DB 2
+TRES DB 4
+CUATRO DB 8
+CINCO DB 16
+SEIS DB 32
+SIETE DB 64
+OCHO DB 128
+
+ORG 44
+IP_CLK DW RUT_CLK
+
+ORG 3000H
+RUT_CLK: ; sentido en CL. 
+  ; si es 0, a la derecha, si es 1, a la izquierda
+  PUSH AX
+  MOV AH, 1
+  CMP AL, AH; si es cero, sumo uno
+  JZ ES_1
+  CMP AL, 128; si llego al ultimo, decremento
+  JZ ES_8
+  CMP CL, 1
+  JZ MOVER_IZQUIERDA
+  JMP MOVER_DERECHA
+
+MOVER_DERECHA:
+  DEC DX
+  PUSH BX
+  MOV BX, DX
+  MOV AL, [BX]
+  JMP FIN
+
+MOVER_IZQUIERDA:
+  INC DX
+  PUSH BX
+  MOV BX, DX
+  MOV AL, [BX]
+  JMP FIN
+
+ES_8:
+  DEC DX
+  PUSH BX
+  MOV BX, DX
+  MOV AL, [BX]
+  POP BX
+  MOV CL, 0
+  JMP FIN
+  
+ES_1:
+  INC DX
+  PUSH BX
+  MOV BX, DX
+  MOV AL, [BX]
+  POP BX
+  MOV CL, 1
+  JMP FIN
+  
+FIN:
+  OUT PB, AL
+  MOV [BX], AL
+  MOV AL, 020H
+  OUT EOI, AL
+  IRET
+  
+ORG 2000H
+CLI
+MOV AL, N_CLK 
+OUT PIC + 5, AL
+MOV AL, 11111101B
+OUT PIC + 1, AL
+MOV AL, 1
+OUT TIMER + 1, AL
+MOV AL, 0
+OUT TIMER, AL
+MOV AL, 000H; para que sean todos los leds de salida
+OUT CB, AL
+OUT PB, AL
+MOV BX, OFFSET NUMERO
+MOV CL, 1; sentido
+MOV DX, OFFSET NUMERO
+STI
+LAZO:JMP LAZO
+HLT
+END
+
+
+
+
+
+
+
+
+
+
+
+
+
+

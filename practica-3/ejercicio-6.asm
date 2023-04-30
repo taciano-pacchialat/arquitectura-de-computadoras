@@ -1,0 +1,96 @@
+TIMER EQU 10H
+COMP EQU 11H
+ID_F10 EQU 10
+PA EQU 30H; switches
+PB EQU 31H; leds
+CA EQU 32H
+CB EQU 33H
+IMR EQU 21H
+EOI EQU 20H
+INT0 EQU 24H
+
+ORG 1000H
+CARACTERES DB ?
+DB ?
+DB ?
+FIN DB ?
+
+ORG 40 
+IP_F10 DW RUT_F10
+
+ORG 3000H
+LEER: PUSH AX
+PUSH BX
+PUSH CX
+PUSH DX
+; CX offset fin, BX offset caracteres
+LOOP: CMP BX, CX
+JZ RETORNO
+INT 6
+INC BX
+JMP LOOP
+
+RETORNO: POP DX
+POP CX
+POP BX
+POP AX
+RET
+
+RUT_F10: PUSH AX
+PUSH BX
+PUSH CX
+PUSH DX
+
+
+POLL: IN AL, PA; estado
+AND AL, 1
+JNZ POLL; chequeo constantemente el busy 
+CMP BX, CX; me fijo si llegue al final de los chars
+JZ RETORNO2
+MOV AL, [BX]
+OUT PB, AL
+IN AL, PA
+OR AL, 2
+OUT PA, AL; envio el estado con strobe en 1
+AND AL, 0FDH
+OUT PA, AL; vuelvo a poner el strobe en 0
+INC BX
+JMP POLL
+
+RETORNO2: POP DX
+POP CX
+POP BX
+POP AX
+IRET
+  
+ORG 2000H
+CLI
+MOV AL, 11111110B
+OUT IMR, AL
+MOV AL, ID_F10
+OUT INT0, AL; interrupcion de F10
+MOV AL, 0FDH; 1111 1101
+OUT CA, AL; busy en entrada, strobe de salida
+MOV AL, 0; en datos, todo en salida
+OUT CB, AL
+MOV BX, OFFSET CARACTERES
+MOV CX, OFFSET FIN
+CALL LEER
+STI
+LAZO: JMP LAZO
+HLT
+END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
