@@ -74,7 +74,7 @@ again:	daddi $t2,$t2,1		; increment x
 	sb $t2,5($t8)		; store x in DATA+5
 
 	daddi $t3,$t3,1		; increment y
-	sb $t3,4($t8)		; store y in DATA+4
+	sb $t3,4($t8)		; store y in DATA+5
 
 	sd $v0,0($t9)		; draw it	
 

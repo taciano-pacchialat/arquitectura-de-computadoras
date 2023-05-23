@@ -1,7 +1,7 @@
 .data
 tabla: .word 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 M: .word 4
-dimension: .word 6
+dimension: .word 10
 resultado: .word 0
 
 .code
