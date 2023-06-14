@@ -1,0 +1,136 @@
+1. preguntar
+
+2. 
+daddi $sp, $sp, 8
+ld $t6, 0($sp)
+
+3.
+XX = 77
+$t7 = 83
+como el BTB comienza en "No saltar", la primera vez que entre no se 
+va a predecir correctamente -> +1
+Se cambia el BTB a "Saltar" 
+Cuando $t7 sea 0, no tendra que saltar, pero va a predecir un salto
+entonces se predice mal -> +1
+Por lo tanto las veces que le erra en la prediccion = 2
+
+4.
+.data
+numero: .double 0
+valor: .double 4.2
+mensaje: .asciiz "El resultado es: "
+resultado: .double 0
+control: .word 0x10000
+data: .word 0x10008
+
+.code
+ld $s0, control($zero)
+ld $s1, data($zero)
+
+daddi $t0, $zero, 6 #limpio pantalla
+ld $t0, 0($s0)
+
+daddi $t0, $zero, 8 # leo un numero
+sd $t0, 0($s0)
+
+l.d f1, 0($s1) # f1 = numero
+l.d f2, valor($zero) # f2 = valor
+
+c.lt.d f2, f1
+bc1t caso1
+j caso2
+
+caso1: sub.d f3, f1, f2 # f3 = numero - valor
+mul.d f4, f3, f1 # f4 = f3 * numero
+j imprimir
+
+caso2: sub.d f3, f2, f1
+div.d f4, f3, f1
+j imprimir
+
+imprimir: daddi $t0, $zero, mensaje # direc de mensaje en t0
+sd $t0, 0($s1) # imprimo mensaje
+daddi $t1, $zero, 4
+sd $t1, 0($s0)
+
+s.d f4, 0($s1) # resultado en data
+daddi $t0, $zero, 3 # imprimo el flotante 
+sd $t0, 0($s0)
+
+
+5.
+$t1 = direccion de cadena
+$t2 = 0
+$t3 = caracter de cadena
+incrementa el desplazamiento $t2 = $t2 + 1
+si no termina la cadena, salta a loop
+
+como tiene el delay slot activado, la instruccion debajo del bnez se ejecuta siempre (en este caso le suma al desplazamiento)
+como t2 termina en 8, el valor que queda en result = 8
+
+6.
+.data
+tabla_1: .word 21, 12, 5, 16, 8, 39, 10, 41, 4, 33
+tabla_2: .word 32, 24, 15, 32, 17, 28, 11, 20, 44, 21
+dim: .word 10
+rojo: .byte 255, 0, 0, 0
+verde: .byte 0, 255, 0, 0
+CONTROL: .word 0x10000
+DATA: .word 0x10008
+
+.text
+daddi $a0, $zero, tabla_1
+ld $a1, dim($zero)
+jal MIN_MAX
+dadd $s0, $zero, $v0 # s0 = min tabla1
+dadd $s1, $zero, $v1 # s1 = max tabla1
+
+daddi $a0, $zero, tabla_2
+jal MIN_MAX
+dadd $s3, $zero, $v0 # s3 = min tabla2
+dadd $s4, $zero, $v1 # s4 = max tabla2
+
+lwu $s5, CONTROL($zero)
+lwu $s6, DATA($zero)
+
+daddi $t0, $zero, 7
+sd $t0, 0($s5)
+
+lwu $t3, rojo($zero)
+sw $t3, 0($s6) # rojo en data
+sb $s0, 5($s6) # min tabla 1 en coorX
+sb $s4, 4($s6) # max tabla 2 en coorY
+daddi $t4, $zero, 5
+sd $t4, 0($s5) # imprimo el rojo
+
+lwu $t3, verde($zero)
+sw $t3, 0($s6)
+sb $s3, 5($s6)
+sb $s1, 4($s6)
+sd $t4, 0($s5)
+
+halt
+
+
+# a0 direccion, a1 dim
+# retorna en v0 el minimo
+# en v1 el maximo
+MIN_MAX: dadd $t0, $zero, $a0 # t0 = direccion
+dadd $t1, $zero, $a1 # t1 = dim
+daddi $v0, $zero, 9999 # v0 = minimo
+daddi $v1, $zero, -9999 # v1 = maximo
+
+lazo: ld $t2, 0($t0)
+slt $t3, $v1, $t2 # 1 en t3 if v1 < t2
+beqz $t3, nomax # si es mayor, modifico maximo
+dadd $v1, $zero, $t2
+nomax: slt $t4, $t2, $v0 # t4 = 1 if t2 < v0
+beqz $t4, nomin # si es menor, modifico minimo
+dadd $v0, $zero, $t2
+nomin: daddi $t1, $t1, -1
+daddi $t0, $t0, 8
+beqz $t1, retornar
+j lazo
+
+retornar: jr $ra
+

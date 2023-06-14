@@ -1,1 +1,1 @@
-\\VBOXSVR\modulo-2\e8p2.s
+\\VBOXSVR\modulo-2\practica-3\ejercicio-2.s
