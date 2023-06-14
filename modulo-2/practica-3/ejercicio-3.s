@@ -1,20 +1,24 @@
 .data
 CONTROL: .word 0x10000
 DATA: .word 0x10008
-mensaje: .asciiz "el resultado es: "
+mensaje: .asciiz "numero: "
+mensaje2: .asciiz "el resultado es: "
 
 .text
 ld $s6, CONTROL($zero)
 ld $s7, DATA($zero)
 
+daddi $t0, $zero, 6
+sd $t0, 0($s6) ; limpio terminal
+
 jal ingreso
 beqz $v0, fin2
-daddi $a0, $zero, $v1 ; en a0 el primer numero
+dadd $a0, $zero, $v1 ; en a0 el primer numero
 jal ingreso
 beqz $v0, fin2
-daddi $a1, $zero, $v1 ; en a1 el otro numero
+dadd $a1, $zero, $v1 ; en a1 el otro numero
 jal resultado
-halt
+fin2: halt
 
 
 
@@ -22,10 +26,10 @@ halt
 ; en a1 numero 2
 ; imprime en terminal la suma de ambos
 resultado: 
-  daddi $t0, $zero, mensaje
+  daddi $t0, $zero, mensaje2
   sd $t0, 0($s7)
   daddi $t0, $zero, 4
-  sd $t0, 0($s6) ; imprimo el mensaje
+  sd $t0, 0($s6) ; imprimo el mensaje2
   dadd $a0, $a0, $a1 ; sumo los numeros
   daddi $t0, $zero, 1 
   sd $a0, 0($s7) ; mando la suma a DATA
